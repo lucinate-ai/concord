@@ -27,7 +27,7 @@ function write(rel: string, content: string) {
 
 function commitAll(message: string) {
   git('add', '-A');
-  git('-c', 'user.email=t@t', '-c', 'user.name=t', 'commit', '-q', '-m', message);
+  git('commit', '-q', '-m', message);
 }
 
 const SPEC_V0 = `# Widgets Specification
@@ -72,6 +72,10 @@ Widgets SHALL frobnicate exactly twice.
 function initRepo() {
   dir = mkdtempSync(join(tmpdir(), 'concord-check-'));
   git('init', '-q', '-b', 'main');
+  // hermetic identity: CI runners have no global git config, and `git merge`
+  // needs a committer just like `git commit` does
+  git('config', 'user.email', 'concord-test@example.invalid');
+  git('config', 'user.name', 'concord-test');
   write('openspec/specs/widgets/spec.md', SPEC_V0);
   commitAll('spec v0');
 }
