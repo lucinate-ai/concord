@@ -78,6 +78,12 @@ runs it). Conventional-commit style commit messages (`feat:`, `fix:`, `docs:`, â
 (`.github/workflows/ci.yml`) runs lint + build + test across Node 20/22/24 on every push and
 PR; keep it green.
 
+When bumping the version, bump `.claude-plugin/plugin.json`'s `version` (and the `metadata.version`
+in `skills/concord/SKILL.md`) in step with package.json â€” the Claude Code plugin metadata is a
+separate file and will otherwise drift. Whenever concord's finding kinds (`drift`,
+`removed-upstream`, `target-missing`, `name-collision`, `overlap`) or CLI flags change, update
+`skills/concord/SKILL.md` too so the agent guidance stays true to the tool.
+
 ## Style
 
 British English in prose (docs, comments, user-facing strings: "canonicalise", "licence").
