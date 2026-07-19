@@ -32,18 +32,20 @@ Run **`concord check`** (and, when more than one change is open, **`concord over
 - **When opening or editing a change whose delta targets a requirement that already exists** on
   the base branch (any `MODIFIED`, `REMOVED`, or `RENAMED` op, or an `ADDED`/`RENAMED`-to name
   that might already be taken). This is where drift and name collisions are introduced.
-- **In CI**, as a gate on every PR that touches `openspec/`.
+- **In CI**, as a gate on every PR that touches `openspec/` — using the shipped GitHub Action
+  rather than a hand-rolled step (see [Running concord in CI](#running-concord-in-ci)).
 
 If the user asks you to review, land, or archive OpenSpec work and you haven't run concord this
 session, run it first.
 
 ## How to invoke
 
-Two commands:
+Three commands:
 
 ```bash
 concord check      # every open change's delta targets vs the base branch
 concord overlap    # any requirement claimed by more than one open change
+concord ci         # check + overlap together — one gate, one exit code (the usual CI gate)
 ```
 
 If the `concord` binary is not on `PATH`, fall back to npx (no install needed):
@@ -51,6 +53,7 @@ If the `concord` binary is not on `PATH`, fall back to npx (no install needed):
 ```bash
 npx @lucinate-ai/concord check
 npx @lucinate-ai/concord overlap
+npx @lucinate-ai/concord ci
 ```
 
 Useful flags (`check` unless noted):
@@ -63,6 +66,7 @@ Useful flags (`check` unless noted):
 | `--dir <path>` | OpenSpec directory relative to the repo root (default `openspec`) |
 | `-C, --cwd <path>` | run as if started in `<path>` |
 | `-C`, `--dir`, `--json` | also accepted by `overlap` |
+| `-C`, `--dir`, `--base`, `--change`, `--json` | all accepted by `ci` (it takes check's flags) |
 
 When you need to enumerate findings programmatically, run with `--json` and read the structured
 result rather than parsing the human-rendered text:
@@ -70,6 +74,7 @@ result rather than parsing the human-rendered text:
 ```bash
 concord check --json    # -> { base, findings: [...], changesChecked, operationsChecked, ... }
 concord overlap --json  # -> { overlaps: [...] }
+concord ci --json       # -> { check: { ... }, overlap: { ... } }
 ```
 
 ## Exit codes
@@ -77,7 +82,8 @@ concord overlap --json  # -> { overlaps: [...] }
 concord's exit code is a CI contract — use it, don't just scan stdout:
 
 - **`0`** — clean, no findings. Safe to proceed.
-- **`1`** — findings were reported. Resolve them (see below) before archiving.
+- **`1`** — findings or overlaps were reported (for `ci`, either one). Resolve them (see below)
+  before archiving.
 - **`2`** — usage or environment error (bad flag, not a git repo, no `openspec/` dir, base ref
   can't be resolved). This is **not** a spec finding — fix the invocation or environment; don't
   treat it as drift/overlap.
@@ -107,6 +113,62 @@ concord's exit code is a CI contract — use it, don't just scan stdout:
 - **`overlap`** — the same requirement is claimed by **more than one open change**. *Fix:* the two
   changes need to coordinate — split the requirement, sequence the changes, or fold them together
   — so only one open change owns each requirement at archive time.
+
+## Running concord in CI
+
+Don't hand-roll an `npx @lucinate-ai/concord` step. concord ships GitHub Actions and a reusable
+workflow that install a pinned concord, run it, and render findings and overlaps as pull request
+annotations and a job step summary. When you set up or review CI for an OpenSpec repo, adopt one
+of these rather than writing your own step.
+
+Three composite actions, referenced by path:
+
+| Action | Runs | Use when |
+|---|---|---|
+| `lucinate-ai/concord/actions/ci` | `concord ci` | combined check + overlap gate — **the usual default** |
+| `lucinate-ai/concord/actions/check` | `concord check` | only drift / target / collision checks |
+| `lucinate-ai/concord/actions/overlap` | `concord overlap` | only cross-change overlap |
+
+Two things to get right:
+
+- **Pin the floating major tag** — `uses: lucinate-ai/concord/actions/ci@v1` — so you get patch
+  and minor updates without editing the workflow.
+- **Check out with full history** for the `ci` and `check` actions (`actions/checkout` with
+  `fetch-depth: 0`). They reconstruct the merge-base from git history, so a shallow checkout
+  breaks drift detection and can report a false clean result. `overlap` needs no base and runs on
+  a shallow checkout.
+
+A minimal PR gate:
+
+```yaml
+# .github/workflows/concord.yml
+on: pull_request
+jobs:
+  concord:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: lucinate-ai/concord/actions/ci@v1
+```
+
+Or adopt without writing your own checkout — call the reusable workflow, which checks out with
+full history and runs an action for you:
+
+```yaml
+# .github/workflows/concord.yml
+on: pull_request
+jobs:
+  concord:
+    uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
+    # with:
+    #   command: ci   # ci (default) | check | overlap
+```
+
+Each action takes inputs — `dir`, `version`, `fail-on-findings`, `annotations`, `summary`, plus
+`base` and `change` on `ci`/`check` — with sensible defaults. See the action YAML under `actions/`
+for the full list.
 
 ## Notes
 
