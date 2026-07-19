@@ -89,8 +89,10 @@ npx @lucinate-ai/concord overlap
 
 ## Use it in your CI
 
-Run concord in your own pipeline with the first-party GitHub Actions. The reusable workflow handles
-the full-history checkout for you — add one file:
+Run concord in your own pipeline with the first-party GitHub Actions, published from this repo's
+`actions/` directory. Add one workflow — the `ci` action runs `concord ci` (drift **and** overlap)
+against the PR base, annotating findings on the pull request and writing a job summary. Check out
+with `fetch-depth: 0` so `ci`/`check` can reconstruct the merge-base from history:
 
 ```yaml
 # .github/workflows/concord.yml
@@ -100,14 +102,8 @@ on:
 
 jobs:
   concord:
-    uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
-```
-
-On every PR this runs `concord ci` (drift **and** overlap) against the PR base, annotating findings
-on the pull request and writing a job summary. Prefer composing it into an existing job? Use the
-action directly (remember `fetch-depth: 0` for `ci`/`check`):
-
-```yaml
+    runs-on: ubuntu-latest
+    steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
