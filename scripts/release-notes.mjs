@@ -87,6 +87,16 @@ function repoUrl() {
   }
 }
 
+function npmUrl(tag) {
+  try {
+    const pkg = JSON.parse(readFileSync(new URL('../package.json', import.meta.url)));
+    if (!pkg.name || pkg.private) return null;
+    return `https://www.npmjs.com/package/${pkg.name}/v/${tag.replace(/^v/, '')}`;
+  } catch {
+    return null;
+  }
+}
+
 function render(tag, prev, list) {
   const out = [];
 
@@ -106,6 +116,9 @@ function render(tag, prev, list) {
   if (other.length) out.push('### Other Changes', '', ...other.map(line), '');
 
   if (out.length === 0) out.push('_No notable changes._', '');
+
+  const npm = npmUrl(tag);
+  if (npm) out.push(`**npm**: ${npm}`, '');
 
   const url = repoUrl();
   if (url && prev) {
