@@ -1,0 +1,13 @@
+# Example: overlap-only. Needs no git history, so no fetch-depth: 0 required.
+name: concord-overlap
+on:
+  pull_request:
+
+jobs:
+  overlap:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: lucinate-ai/concord/actions/overlap@v1
+        # with:
+        #   dir: openspec

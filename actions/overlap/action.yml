@@ -1,0 +1,60 @@
+name: 'concord overlap'
+description: 'Run concord overlap (requirements claimed by more than one open change) in CI, with PR annotations and a job summary.'
+branding:
+  icon: 'copy'
+  color: 'purple'
+inputs:
+  dir:
+    description: 'OpenSpec directory relative to the repo root.'
+    required: false
+    default: 'openspec'
+  version:
+    description: 'concord npm version or dist-tag to install.'
+    required: false
+    default: 'latest' # x-release-version
+  working-directory:
+    description: 'Directory to run in, relative to the workspace.'
+    required: false
+    default: '.'
+  fail-on-findings:
+    description: 'Fail the step when overlaps are present.'
+    required: false
+    default: 'true'
+  annotations:
+    description: 'Emit pull request annotations for overlaps.'
+    required: false
+    default: 'true'
+  summary:
+    description: 'Write a job step summary.'
+    required: false
+    default: 'true'
+outputs:
+  findings:
+    description: 'Number of check findings (0 for this action).'
+    value: ${{ steps.concord.outputs.findings }}
+  overlaps:
+    description: 'Number of overlapping requirements.'
+    value: ${{ steps.concord.outputs.overlaps }}
+  exit-code:
+    description: 'concord exit code (0 clean, 1 overlaps, 2 error).'
+    value: ${{ steps.concord.outputs.exit-code }}
+  result:
+    description: 'Raw concord overlap JSON.'
+    value: ${{ steps.concord.outputs.result }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - id: concord
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/../run.sh"
+      env:
+        INPUT_COMMAND: overlap
+        INPUT_DIR: ${{ inputs.dir }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        INPUT_ANNOTATIONS: ${{ inputs.annotations }}
+        INPUT_SUMMARY: ${{ inputs.summary }}

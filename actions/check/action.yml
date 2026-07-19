@@ -1,0 +1,70 @@
+name: 'concord check'
+description: 'Run concord check (stale-base drift, missing targets, name collisions) in CI, with PR annotations and a job summary.'
+branding:
+  icon: 'git-branch'
+  color: 'purple'
+inputs:
+  base:
+    description: "Base ref to compare against. Defaults to the PR base on pull_request events, else origin's default branch."
+    required: false
+    default: ''
+  dir:
+    description: 'OpenSpec directory relative to the repo root.'
+    required: false
+    default: 'openspec'
+  change:
+    description: 'Restrict the check to a single change id.'
+    required: false
+    default: ''
+  version:
+    description: 'concord npm version or dist-tag to install.'
+    required: false
+    default: 'latest' # x-release-version
+  working-directory:
+    description: 'Directory to run in, relative to the workspace.'
+    required: false
+    default: '.'
+  fail-on-findings:
+    description: 'Fail the step when findings are present.'
+    required: false
+    default: 'true'
+  annotations:
+    description: 'Emit pull request annotations for findings.'
+    required: false
+    default: 'true'
+  summary:
+    description: 'Write a job step summary.'
+    required: false
+    default: 'true'
+outputs:
+  findings:
+    description: 'Number of check findings.'
+    value: ${{ steps.concord.outputs.findings }}
+  overlaps:
+    description: 'Number of overlapping requirements (0 for this action).'
+    value: ${{ steps.concord.outputs.overlaps }}
+  exit-code:
+    description: 'concord exit code (0 clean, 1 findings, 2 error).'
+    value: ${{ steps.concord.outputs.exit-code }}
+  result:
+    description: 'Raw concord check JSON.'
+    value: ${{ steps.concord.outputs.result }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+    - id: concord
+      shell: bash
+      run: bash "${GITHUB_ACTION_PATH}/../run.sh"
+      env:
+        INPUT_COMMAND: check
+        INPUT_BASE: ${{ inputs.base }}
+        INPUT_DIR: ${{ inputs.dir }}
+        INPUT_CHANGE: ${{ inputs.change }}
+        INPUT_VERSION: ${{ inputs.version }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_FAIL_ON_FINDINGS: ${{ inputs.fail-on-findings }}
+        INPUT_ANNOTATIONS: ${{ inputs.annotations }}
+        INPUT_SUMMARY: ${{ inputs.summary }}

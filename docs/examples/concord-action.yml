@@ -1,0 +1,19 @@
+# Example: compose the concord ci action directly into a job.
+# Remember fetch-depth: 0 — ci/check need full history.
+name: concord
+on:
+  pull_request:
+
+jobs:
+  concord:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: lucinate-ai/concord/actions/ci@v1
+        # with:
+        #   dir: openspec
+        #   base: origin/main
+        #   change: add-auth
+        #   fail-on-findings: true
