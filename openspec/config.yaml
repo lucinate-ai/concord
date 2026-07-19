@@ -1,0 +1,22 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+context: |
+  Concord is a CLI companion for OpenSpec repos: it detects stale-base drift,
+  invalid delta targets, name collisions, and cross-change overlaps for open
+  changes, using only git history and the working tree (no stored state).
+  Tech stack: TypeScript (ESM), Node >= 20.19, Commander, chalk; pnpm; vitest;
+  eslint. Parsers deliberately mirror OpenSpec v1.6.0 behaviour.
+  Conventions: conventional commits, British English in prose.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
