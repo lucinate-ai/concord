@@ -54,7 +54,7 @@
   },
   "dependencies": {
     "chalk": "^5.5.0",
-    "commander": "^14.0.0"
+    "commander": "^15.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.0",
