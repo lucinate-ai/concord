@@ -1,0 +1,13 @@
+# Example: adopt concord via the reusable workflow (recommended).
+# Copy to .github/workflows/concord.yml in your repo.
+name: concord
+on:
+  pull_request:
+
+jobs:
+  concord:
+    uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
+    # with:
+    #   command: ci          # ci (default) | check | overlap
+    #   dir: openspec
+    #   fail-on-findings: true

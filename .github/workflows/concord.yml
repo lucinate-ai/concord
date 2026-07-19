@@ -1,0 +1,72 @@
+name: concord
+
+# Reusable workflow: check out the caller's repo with full history and run one
+# of the concord actions. Consumers adopt with a small caller workflow:
+#
+#   jobs:
+#     concord:
+#       uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
+#
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: 'Which concord action to run: ci, check, or overlap.'
+        type: string
+        default: 'ci'
+      base:
+        description: 'Base ref override (ci/check only).'
+        type: string
+        default: ''
+      dir:
+        description: 'OpenSpec directory relative to the repo root.'
+        type: string
+        default: 'openspec'
+      change:
+        description: 'Restrict the check analysis to a single change id (ci/check only).'
+        type: string
+        default: ''
+      version:
+        description: 'concord npm version or dist-tag to install.'
+        type: string
+        default: 'latest'
+      fail-on-findings:
+        description: 'Fail the job when findings or overlaps are present.'
+        type: boolean
+        default: true
+
+jobs:
+  concord:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: concord ci
+        if: inputs.command == 'ci'
+        uses: lucinate-ai/concord/actions/ci@v1
+        with:
+          base: ${{ inputs.base }}
+          dir: ${{ inputs.dir }}
+          change: ${{ inputs.change }}
+          version: ${{ inputs.version }}
+          fail-on-findings: ${{ inputs.fail-on-findings }}
+
+      - name: concord check
+        if: inputs.command == 'check'
+        uses: lucinate-ai/concord/actions/check@v1
+        with:
+          base: ${{ inputs.base }}
+          dir: ${{ inputs.dir }}
+          change: ${{ inputs.change }}
+          version: ${{ inputs.version }}
+          fail-on-findings: ${{ inputs.fail-on-findings }}
+
+      - name: concord overlap
+        if: inputs.command == 'overlap'
+        uses: lucinate-ai/concord/actions/overlap@v1
+        with:
+          dir: ${{ inputs.dir }}
+          version: ${{ inputs.version }}
+          fail-on-findings: ${{ inputs.fail-on-findings }}

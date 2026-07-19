@@ -87,14 +87,42 @@ npx @lucinate-ai/concord check
 npx @lucinate-ai/concord overlap
 ```
 
-CI gate (GitHub Actions):
+## Use it in your CI
+
+Run concord in your own pipeline with the first-party GitHub Actions. The reusable workflow handles
+the full-history checkout for you — add one file:
+
+```yaml
+# .github/workflows/concord.yml
+name: concord
+on:
+  pull_request:
+
+jobs:
+  concord:
+    uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
+```
+
+On every PR this runs `concord ci` (drift **and** overlap) against the PR base, annotating findings
+on the pull request and writing a job summary. Prefer composing it into an existing job? Use the
+action directly (remember `fetch-depth: 0` for `ci`/`check`):
+
+```yaml
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: lucinate-ai/concord/actions/ci@v1
+```
+
+There are three actions — `actions/ci`, `actions/check`, `actions/overlap`. See
+[docs/github-actions.md](docs/github-actions.md) for inputs, outputs, and examples. You can always
+call the CLI by hand instead:
 
 ```yaml
 - name: Spec drift check
   run: |
     git fetch origin main
-    npx @lucinate-ai/concord check --base origin/main
-    npx @lucinate-ai/concord overlap
+    npx @lucinate-ai/concord ci --base origin/main
 ```
 
 ## Use it as a Claude Code plugin
@@ -121,6 +149,7 @@ plugin only packages guidance around the existing CLI — it changes none of con
 |---|---|---|
 | `concord check` | every open change's delta targets against the base branch | `--base <ref>`, `--change <id>`, `--dir <path>`, `--json`, `-C <cwd>` |
 | `concord overlap` | no requirement is claimed by two open changes | `--dir <path>`, `--json`, `-C <cwd>` |
+| `concord ci` | check and overlap together — one gate, one exit code, one JSON document | `--base <ref>`, `--change <id>`, `--dir <path>`, `--json`, `-C <cwd>` |
 
 ## Roadmap
 
