@@ -6,7 +6,7 @@ license: Apache-2.0
 compatibility: Requires a repo with an openspec/ directory and git history. Uses the concord CLI (`@lucinate-ai/concord`).
 metadata:
   author: Concord Contributors
-  version: "0.1.0"
+  version: "0.2.0"
 ---
 
 # concord — catch OpenSpec drift and overlap before archiving
