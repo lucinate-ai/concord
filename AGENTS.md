@@ -72,11 +72,27 @@ Strictly layered; keep it that way:
 
 ## Release
 
-Manual for now: bump the version in package.json, then `npm publish --access public`
-(`prepublishOnly` runs build + tests; publishing requires the maintainer's npm 2FA, so a human
-runs it). Conventional-commit style commit messages (`feat:`, `fix:`, `docs:`, …). CI
-(`.github/workflows/ci.yml`) runs lint + build + test across Node 20/22/24 on every push and
-PR; keep it green.
+Tag-triggered and automated via `.github/workflows/release.yml`. To cut a release:
+
+1. Bump `version` in package.json (and the plugin metadata noted below), and commit with a
+   conventional-commit message (`feat:`, `fix:`, `docs:`, …).
+2. Tag the commit `vX.Y.Z` (matching package.json exactly — the release job fails on a
+   mismatch) and push the tag.
+
+Pushing the tag runs the full CI gate (reused from `ci.yml` via `workflow_call`: openspec
+validation + lint/build/test across Node 20/22/24; the concord dogfood job self-skips on tags,
+which have no base branch) and, only if it passes:
+
+- **major-tag** stamps the actions' default `version` and force-moves the floating major tag
+  (`v1`) so `uses: lucinate-ai/concord/actions/ci@v1` tracks the latest release;
+- **release** generates a changelog from conventional commits since the previous tag
+  (`scripts/release-notes.mjs`), creates the GitHub release (a pre-release for a `-`-suffixed
+  tag), and publishes to npm via **trusted publishing** (OIDC — no `NPM_TOKEN`; provenance is
+  automatic).
+
+One-time setup on npmjs.com: under the `@lucinate-ai/concord` package settings, add a trusted
+publisher pointing at this repo and the `release.yml` workflow. CI (`.github/workflows/ci.yml`)
+also runs on every push and PR; keep it green.
 
 When bumping the version, bump `.claude-plugin/plugin.json`'s `version` (and the `metadata.version`
 in `skills/concord/SKILL.md`) in step with package.json — the Claude Code plugin metadata is a
