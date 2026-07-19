@@ -74,8 +74,10 @@ Strictly layered; keep it that way:
 
 Tag-triggered and automated via `.github/workflows/release.yml`. To cut a release:
 
-1. Bump `version` in package.json (and the plugin metadata noted below), and commit with a
-   conventional-commit message (`feat:`, `fix:`, `docs:`, …).
+1. Run `pnpm bump X.Y.Z` — it updates `version` in every required place in one shot
+   (package.json, `.claude-plugin/plugin.json`, and `skills/concord/SKILL.md`; see
+   `scripts/bump-version.mjs`). Then commit with a conventional-commit message
+   (`chore: release vX.Y.Z`).
 2. Tag the commit `vX.Y.Z` (matching package.json exactly — the release job fails on a
    mismatch) and push the tag.
 
@@ -94,9 +96,10 @@ One-time setup on npmjs.com: under the `@lucinate-ai/concord` package settings, 
 publisher pointing at this repo and the `release.yml` workflow. CI (`.github/workflows/ci.yml`)
 also runs on every push and PR; keep it green.
 
-When bumping the version, bump `.claude-plugin/plugin.json`'s `version` (and the `metadata.version`
-in `skills/concord/SKILL.md`) in step with package.json — the Claude Code plugin metadata is a
-separate file and will otherwise drift. Whenever concord's finding kinds (`drift`,
+`pnpm bump X.Y.Z` keeps `.claude-plugin/plugin.json`'s `version` and the `metadata.version` in
+`skills/concord/SKILL.md` in step with package.json — the Claude Code plugin metadata lives in
+separate files and would otherwise drift. If you add another file that carries the version, add it
+to `TARGETS` in `scripts/bump-version.mjs`. Separately, whenever concord's finding kinds (`drift`,
 `removed-upstream`, `target-missing`, `name-collision`, `overlap`) or CLI flags change, update
 `skills/concord/SKILL.md` too so the agent guidance stays true to the tool.
 
