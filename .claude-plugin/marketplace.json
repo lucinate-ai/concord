@@ -1,0 +1,15 @@
+{
+  "name": "concord-marketplace",
+  "owner": {
+    "name": "Concord Contributors",
+    "url": "https://github.com/lucinate-ai/concord"
+  },
+  "description": "Self-hosting marketplace for the concord Claude Code plugin.",
+  "plugins": [
+    {
+      "name": "concord",
+      "source": "./",
+      "description": "Agent skill that runs concord to catch OpenSpec base drift and cross-change overlap before archiving."
+    }
+  ]
+}

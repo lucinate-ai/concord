@@ -97,6 +97,24 @@ CI gate (GitHub Actions):
     npx @lucinate-ai/concord overlap
 ```
 
+## Use it as a Claude Code plugin
+
+concord ships as a [Claude Code](https://code.claude.com) plugin, so your coding agent knows to
+run these checks at the moments a clobber slips through — before archiving a change, after
+rebasing onto the base branch, or when a delta touches a requirement that already exists. The
+repo is its own marketplace:
+
+```text
+/plugin marketplace add lucinate-ai/concord
+/plugin install concord@concord-marketplace
+```
+
+Once installed, the bundled **concord** agent skill tells the agent when to run `concord check`
+/ `concord overlap`, which flags to use, and how to read the exit codes (`0`/`1`/`2`) and each
+finding kind (`drift`, `removed-upstream`, `target-missing`, `name-collision`, `overlap`). The
+plugin only packages guidance around the existing CLI — it changes none of concord's commands,
+`--json` shapes, or exit codes.
+
 ## Commands
 
 | Command | What it verifies | Key options |
