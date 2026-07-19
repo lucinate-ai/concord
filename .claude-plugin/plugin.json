@@ -1,7 +1,7 @@
 {
   "name": "concord",
   "description": "Concurrent OpenSpec for teams — an agent skill that runs concord to catch base drift and overlapping spec changes before they silently clobber each other.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": {
     "name": "Concord Contributors",
     "url": "https://github.com/lucinate-ai/concord"
