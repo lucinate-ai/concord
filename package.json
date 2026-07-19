@@ -41,6 +41,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "concord": "pnpm build && node bin/concord.js",
     "dev": "tsc -p tsconfig.build.json --watch",
     "lint": "eslint src test",
     "test": "vitest run",
