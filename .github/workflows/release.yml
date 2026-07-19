@@ -1,20 +1,33 @@
 name: release
 
-# On a version tag (vX.Y.Z): stamp the actions' default `version` to the release
-# version, then move the floating major-version tag (e.g. v1) to that commit so
-# `uses: lucinate-ai/concord/actions/ci@v1` resolves to the latest compatible
-# release with a matched action + CLI pair.
+# On a version tag (vX.Y.Z), after the full CI gate passes:
+#   - major-tag: stamp the actions' default `version` to the release version and
+#     move the floating major-version tag (e.g. v1) so
+#     `uses: lucinate-ai/concord/actions/ci@v1` resolves to the latest compatible
+#     release with a matched action + CLI pair.
+#   - release: create a GitHub release with a changelog since the previous tag,
+#     then publish the npm package via trusted publishing (OIDC — no NPM_TOKEN,
+#     provenance automatic).
 on:
   push:
     tags:
       - 'v*.*.*'
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
+  # Reuse the exact CI gate (openspec validation + lint/build/test matrix) so a
+  # release can never ship a commit that wouldn't pass CI. The concord dogfood
+  # job self-skips on tag builds (no base branch to diff against).
+  ci:
+    uses: ./.github/workflows/ci.yml
+
   major-tag:
+    needs: ci
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # commit the stamp and force-move the major-version tag
     steps:
       - uses: actions/checkout@v4
 
@@ -41,3 +54,69 @@ jobs:
           git commit -am "chore: stamp action version ${FULL_TAG}" || echo "nothing to stamp"
           git tag -f "${MAJOR}"
           git push -f origin "refs/tags/${MAJOR}"
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # npm trusted publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history for the changelog
+          fetch-tags: true # previous tags for `git describe`
+
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          registry-url: 'https://registry.npmjs.org'
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Verify tag matches package.json version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match package.json version $pkg"
+            exit 1
+          fi
+          echo "Releasing $GITHUB_REF_NAME"
+
+      - run: pnpm build
+
+      - name: Generate release notes
+        run: node scripts/release-notes.mjs > RELEASE_NOTES.md
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=()
+          case "$GITHUB_REF_NAME" in
+            *-*) flags+=(--prerelease) ;; # v1.2.0-rc.1 etc.
+          esac
+          gh release create "$GITHUB_REF_NAME" \
+            --title "$GITHUB_REF_NAME" \
+            --notes-file RELEASE_NOTES.md \
+            --verify-tag \
+            "${flags[@]}"
+
+      # Trusted publishing (OIDC) needs npm >= 11.5.1; the runner's bundled npm is
+      # older. Install the latest and assert the floor so a too-old npm fails here
+      # with a clear message rather than a cryptic auth error at publish time.
+      - name: Set up npm with trusted-publishing support
+        run: |
+          npm install -g npm@latest
+          ver="$(npm --version)"
+          echo "npm $ver"
+          if [ "$(printf '11.5.1\n%s\n' "$ver" | sort -V | head -n1)" != "11.5.1" ]; then
+            echo "::error::npm $ver is older than 11.5.1 and lacks trusted publishing"
+            exit 1
+          fi
+
+      - name: Publish to npm (trusted publishing)
+        run: npm publish --ignore-scripts

@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call: # reused as the release gate (see release.yml)
 
 jobs:
   validate:
@@ -20,7 +21,10 @@ jobs:
   # the published CLI, so this gates against the latest release, not the working
   # tree. The published 0.1.0 predates the combined `ci` command, so run the
   # `check` and `overlap` actions (the same two analyses) rather than `ci`.
+  # `concord check` needs a base branch to diff against, which only exists on a
+  # PR or a main push — skip on tag/release-gate calls (detached HEAD, no base).
   concord:
+    if: ${{ github.event_name == 'pull_request' || github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
