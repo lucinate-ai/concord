@@ -3,7 +3,7 @@
 **Concurrent OpenSpec for teams.** Catch base drift and overlapping spec changes *before* they
 silently clobber each other.
 
-[![npm](https://img.shields.io/npm/v/%40lucinate-ai%2Fconcord)](https://www.npmjs.com/package/@lucinate-ai/concord)
+[![npm](https://img.shields.io/npm/v/%40lucinate-ai/concord)](https://www.npmjs.com/package/@lucinate-ai/concord)
 [![CI](https://github.com/lucinate-ai/concord/actions/workflows/ci.yml/badge.svg)](https://github.com/lucinate-ai/concord/actions/workflows/ci.yml)
 [![License: Apache-2.0](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 
