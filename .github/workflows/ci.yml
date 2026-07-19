@@ -6,6 +6,16 @@ on:
   pull_request:
 
 jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - run: npm install -g @fission-ai/openspec@1.6.0
+      - run: openspec validate --all
+
   test:
     runs-on: ubuntu-latest
     strategy:
