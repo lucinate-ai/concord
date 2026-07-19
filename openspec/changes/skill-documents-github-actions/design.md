@@ -15,8 +15,7 @@ setting up CI adopts the maintained action instead of writing an unpinned `npx` 
 ## Goals / Non-Goals
 
 **Goals:**
-- The skill names the three actions (by their `uses:` path form), the reusable workflow, and what
-  each runs.
+- The skill names the three actions (by their `uses:` path form) and what each runs.
 - The skill states the two things an agent most often gets wrong: pinning `@v1` and checking out
   with `fetch-depth: 0` for `ci`/`check`.
 - The skill mentions `concord ci` as the combined gate in its invocation guidance.
@@ -45,8 +44,16 @@ setting up CI adopts the maintained action instead of writing an unpinned `npx` 
   different layers; an agent that knows the command understands the action, and `ci` is also
   useful to run locally before pushing. This makes the invocation guidance and the CI section
   reinforce each other.
-- **Recommend `actions/ci` as the default** in the skill, matching the reusable workflow's default
-  and the "combined gate by default" behaviour in the `github-actions` spec.
+- **Recommend `actions/ci` as the default** in the skill, matching the "combined gate by default"
+  behaviour in the `github-actions` spec.
+- **Recommend only the `actions/` composite actions, not the reusable workflow.** concord's
+  reusable workflow at `.github/workflows/concord.yml` is technically consumable (`on:
+  workflow_call`), but it lives alongside concord's own build workflows and is a second,
+  near-identical way to do the same thing. The `actions/` directory is concord's clean external
+  surface, and the skill already spells out the `fetch-depth: 0` checkout the reusable workflow
+  would otherwise save. Teaching one path keeps the guidance crisp. Alternative considered:
+  document both — rejected as redundant and as blurring concord's internal `.github/workflows/`
+  with its consumer API.
 
 ## Risks / Trade-offs
 

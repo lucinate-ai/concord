@@ -116,10 +116,10 @@ concord's exit code is a CI contract — use it, don't just scan stdout:
 
 ## Running concord in CI
 
-Don't hand-roll an `npx @lucinate-ai/concord` step. concord ships GitHub Actions and a reusable
-workflow that install a pinned concord, run it, and render findings and overlaps as pull request
-annotations and a job step summary. When you set up or review CI for an OpenSpec repo, adopt one
-of these rather than writing your own step.
+Don't hand-roll an `npx @lucinate-ai/concord` step. concord ships GitHub Actions that install a
+pinned concord, run it, and render findings and overlaps as pull request annotations and a job
+step summary. When you set up or review CI for an OpenSpec repo, adopt one of these rather than
+writing your own step.
 
 Three composite actions, referenced by path:
 
@@ -151,19 +151,6 @@ jobs:
         with:
           fetch-depth: 0
       - uses: lucinate-ai/concord/actions/ci@v1
-```
-
-Or adopt without writing your own checkout — call the reusable workflow, which checks out with
-full history and runs an action for you:
-
-```yaml
-# .github/workflows/concord.yml
-on: pull_request
-jobs:
-  concord:
-    uses: lucinate-ai/concord/.github/workflows/concord.yml@v1
-    # with:
-    #   command: ci   # ci (default) | check | overlap
 ```
 
 Each action takes inputs — `dir`, `version`, `fail-on-findings`, `annotations`, `summary`, plus

@@ -33,24 +33,25 @@ findings programmatically and to fall back to a documented install/run path (for
 
 ### Requirement: Skill documents running concord in CI via the shipped actions
 
-The concord agent skill SHALL document that concord ships GitHub Actions and a reusable workflow
-for running the checks in CI, so that an agent wiring up or reviewing CI for an OpenSpec repo
-adopts the maintained action rather than hand-rolling a concord step. The skill SHALL name the
-three composite actions referenced by path — `lucinate-ai/concord/actions/ci` (runs
-`concord ci`), `lucinate-ai/concord/actions/check` (runs `concord check`), and
-`lucinate-ai/concord/actions/overlap` (runs `concord overlap`) — and the reusable workflow entry
-point `lucinate-ai/concord/.github/workflows/concord.yml`. The skill SHALL state that the actions
-self-install a pinned concord and render pull request annotations and a job step summary, that
-`ci` is the combined check + overlap gate and the usual default, that references SHOULD pin the
-floating major tag (for example `@v1`), and that the `ci` and `check` actions require a
-full-history checkout (`fetch-depth: 0`) because a shallow checkout breaks drift detection.
+The concord agent skill SHALL document that concord ships GitHub Actions for running the checks
+in CI, so that an agent wiring up or reviewing CI for an OpenSpec repo adopts the maintained
+action rather than hand-rolling a concord step. The skill SHALL name the three composite actions
+referenced by path — `lucinate-ai/concord/actions/ci` (runs `concord ci`),
+`lucinate-ai/concord/actions/check` (runs `concord check`), and
+`lucinate-ai/concord/actions/overlap` (runs `concord overlap`). The skill SHALL state that the
+actions self-install a pinned concord and render pull request annotations and a job step summary,
+that `ci` is the combined check + overlap gate and the usual default, that references SHOULD pin
+the floating major tag (for example `@v1`), and that the `ci` and `check` actions require a
+full-history checkout (`fetch-depth: 0`) because a shallow checkout breaks drift detection. The
+skill SHALL NOT direct consumers at concord's own `.github/workflows/` reusable workflow, since
+the `actions/` directory is concord's external consumer surface.
 
 #### Scenario: Agent sets up CI for an OpenSpec repo
 
 - **WHEN** an agent is adding or reviewing a CI gate for a repo with an `openspec/` directory and
   the skill is available
-- **THEN** the skill directs the agent to adopt a shipped concord action or the reusable workflow
-  rather than writing an ad hoc `npx @lucinate-ai/concord` step
+- **THEN** the skill directs the agent to adopt a shipped concord action from the `actions/`
+  directory rather than writing an ad hoc `npx @lucinate-ai/concord` step
 
 #### Scenario: Agent chooses which action to run
 
