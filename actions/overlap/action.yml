@@ -11,7 +11,7 @@ inputs:
   version:
     description: 'concord npm version or dist-tag to install.'
     required: false
-    default: 'latest' # x-release-version
+    default: '1.1.0' # x-release-version
   working-directory:
     description: 'Directory to run in, relative to the workspace.'
     required: false
