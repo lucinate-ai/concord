@@ -1,0 +1,54 @@
+# Dependabot version updates — keeps dependencies current with grouped, low-noise PRs.
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+
+updates:
+  # ── JavaScript / TypeScript dependencies (pnpm workspace at the repo root) ──
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "chore"
+      prefix-development: "chore"
+      include: "scope"
+    groups:
+      # Bundle routine (non-major) bumps into one PR per dependency type so the
+      # queue stays quiet. Major bumps are left ungrouped on purpose — they get
+      # their own PR so any breaking change is reviewed in isolation.
+      prod-dependencies:
+        dependency-type: "production"
+        update-types:
+          - "minor"
+          - "patch"
+      dev-dependencies:
+        dependency-type: "development"
+        update-types:
+          - "minor"
+          - "patch"
+
+  # ── GitHub Actions (reusable workflows + first-party composite actions) ──
+  # "/" covers .github/workflows; the actions/* entries cover the composite
+  # actions in actions/check, actions/ci and actions/overlap.
+  - package-ecosystem: "github-actions"
+    directories:
+      - "/"
+      - "/actions/*"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "ci"
+      include: "scope"
+    groups:
+      # Action bumps are low-risk and tend to move together — one PR for all.
+      github-actions:
+        patterns:
+          - "*"
