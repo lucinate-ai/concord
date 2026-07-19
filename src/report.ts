@@ -6,6 +6,7 @@ import { canonicalize } from './core/canonical.js';
 import { compressContext, diffLines } from './core/diff.js';
 import type { CheckResult, Finding } from './commands/check.js';
 import type { OverlapResult } from './commands/overlap.js';
+import type { CiResult } from './commands/ci.js';
 
 function redline(baseBlock: string | undefined, tipBlock: string | undefined): string[] {
   const baseLines = baseBlock ? canonicalize(baseBlock).split('\n') : [];
@@ -111,4 +112,20 @@ export function renderOverlap(result: OverlapResult): string[] {
 
   lines.push(chalk.yellow(`${result.overlaps.length} overlapping requirement(s)`));
   return lines;
+}
+
+export function renderCi(result: CiResult): string[] {
+  const findings = result.check.findings.length;
+  const overlaps = result.overlap.overlaps.length;
+  const summary =
+    findings === 0 && overlaps === 0
+      ? chalk.green('✔ ci clean — no findings, no overlaps')
+      : chalk.red(`✖ ci — ${findings} finding(s), ${overlaps} overlapping requirement(s)`);
+  return [
+    ...renderCheck(result.check),
+    '',
+    ...renderOverlap(result.overlap),
+    '',
+    summary,
+  ];
 }

@@ -23,6 +23,7 @@ export {
   type OverlapEntry,
   type OverlapClaim,
 } from './commands/overlap.js';
-export { renderCheck, renderOverlap } from './report.js';
+export { runCi, type CiOptions, type CiResult } from './commands/ci.js';
+export { renderCheck, renderOverlap, renderCi } from './report.js';
 export { GitError } from './git.js';
 export { ConcordError } from './errors.js';

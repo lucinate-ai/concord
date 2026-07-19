@@ -5,7 +5,8 @@ import { Command } from 'commander';
 
 import { runCheck } from './commands/check.js';
 import { runOverlap } from './commands/overlap.js';
-import { renderCheck, renderOverlap } from './report.js';
+import { runCi } from './commands/ci.js';
+import { renderCheck, renderOverlap, renderCi } from './report.js';
 import { GitError } from './git.js';
 import { ConcordError } from './errors.js';
 
@@ -61,6 +62,30 @@ program
       for (const line of renderOverlap(result)) console.log(line);
     }
     process.exitCode = result.overlaps.length > 0 ? 1 : 0;
+  });
+
+program
+  .command('ci')
+  .description('run check and overlap together — one gate, one exit code, one JSON document')
+  .option('-C, --cwd <path>', 'run as if started in <path>', '.')
+  .option('--dir <path>', 'OpenSpec directory relative to the repo root', 'openspec')
+  .option('--base <ref>', "base ref for the check analysis (default: origin's default branch)")
+  .option('--change <id>', 'restrict the check analysis to a single change')
+  .option('--json', 'machine-readable output', false)
+  .action(async (opts: { cwd: string; dir: string; base?: string; change?: string; json: boolean }) => {
+    const result = await runCi({
+      cwd: opts.cwd,
+      dir: opts.dir,
+      base: opts.base,
+      change: opts.change,
+    });
+    if (opts.json) {
+      console.log(JSON.stringify(result, null, 2));
+    } else {
+      for (const line of renderCi(result)) console.log(line);
+    }
+    process.exitCode =
+      result.check.findings.length > 0 || result.overlap.overlaps.length > 0 ? 1 : 0;
   });
 
 program.parseAsync(process.argv).catch((error: unknown) => {
