@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 // Conventional-commit types in the order they should appear, mapped to headings.
-// Anything unrecognised falls through to "Other Changes"; `chore`/`ci`/`build`/
+// Anything unrecognised falls through to "Other Changes"; `ci`/`build`/
 // `test`/`style` are deliberately omitted from the notes as noise.
 const SECTIONS = [
   ['feat', 'Features'],
@@ -18,7 +18,11 @@ const SECTIONS = [
   ['refactor', 'Refactoring'],
   ['docs', 'Documentation'],
 ];
-const HIDDEN = new Set(['chore', 'ci', 'build', 'test', 'style']);
+const HIDDEN = new Set(['ci', 'build', 'test', 'style']);
+
+// `chore(deps)` and `chore(deps-dev)` are rendered under "Dependency Updates"
+// rather than hidden. Other `chore` commits (e.g. `chore: release`) stay hidden.
+const DEPENDENCY_SCOPES = new Set(['deps', 'deps-dev']);
 
 const RS = '\x1e'; // record separator
 const FS = '\x1f'; // field separator
@@ -110,8 +114,14 @@ function render(tag, prev, list) {
     if (group.length) out.push(`### ${heading}`, '', ...group.map(line), '');
   }
 
+  // Dependency updates: chore(deps) and chore(deps-dev) surfaced before Other.
+  const deps = list.filter(
+    (c) => c.type === 'chore' && DEPENDENCY_SCOPES.has(c.scope),
+  );
+  if (deps.length) out.push('### Dependency Updates', '', ...deps.map(line), '');
+
   const other = list.filter(
-    (c) => !c.breaking && !SECTIONS.some(([t]) => t === c.type) && !HIDDEN.has(c.type),
+    (c) => !c.breaking && !SECTIONS.some(([t]) => t === c.type) && !HIDDEN.has(c.type) && c.type !== 'chore',
   );
   if (other.length) out.push('### Other Changes', '', ...other.map(line), '');
 
