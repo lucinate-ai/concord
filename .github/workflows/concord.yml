@@ -45,7 +45,7 @@ jobs:
 
       - name: concord ci
         if: inputs.command == 'ci'
-        uses: lucinate-ai/concord/actions/ci@v1
+        uses: lucinate-ai/concord/actions/ci@v1.1.0
         with:
           base: ${{ inputs.base }}
           dir: ${{ inputs.dir }}
@@ -55,7 +55,7 @@ jobs:
 
       - name: concord check
         if: inputs.command == 'check'
-        uses: lucinate-ai/concord/actions/check@v1
+        uses: lucinate-ai/concord/actions/check@v1.1.0
         with:
           base: ${{ inputs.base }}
           dir: ${{ inputs.dir }}
@@ -65,7 +65,7 @@ jobs:
 
       - name: concord overlap
         if: inputs.command == 'overlap'
-        uses: lucinate-ai/concord/actions/overlap@v1
+        uses: lucinate-ai/concord/actions/overlap@v1.1.0
         with:
           dir: ${{ inputs.dir }}
           version: ${{ inputs.version }}
